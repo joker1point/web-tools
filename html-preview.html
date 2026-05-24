@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML 实时渲染预览工具</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #1e1e1e; min-height: 100vh; display: flex; flex-direction: column; }
+        .header { background: #2d2d2d; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #404040; }
+        .header h1 { font-size: 18px; color: #fff; font-weight: 600; }
+        .header-actions { display: flex; gap: 10px; }
+        button { padding: 8px 16px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #4a90d9; color: #fff; }
+        .btn-primary:hover { background: #357abd; }
+        .btn-secondary { background: #404040; color: #fff; }
+        .btn-secondary:hover { background: #505050; }
+        .btn-success { background: #27ae60; color: #fff; }
+        .btn-success:hover { background: #1e8449; }
+        .main-container { display: flex; flex: 1; height: calc(100vh - 56px); }
+        .editor-panel { width: 50%; display: flex; flex-direction: column; border-right: 1px solid #404040; }
+        .panel-header { background: #2d2d2d; padding: 8px 16px; font-size: 13px; color: #888; border-bottom: 1px solid #404040; }
+        .editor-wrapper { flex: 1; position: relative; }
+        textarea { width: 100%; height: 100%; background: #1e1e1e; color: #d4d4d4; border: none; padding: 16px; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 14px; line-height: 1.6; resize: none; outline: none; tab-size: 2; }
+        .preview-panel { width: 50%; display: flex; flex-direction: column; }
+        .preview-frame { flex: 1; border: none; background: #fff; }
+        .status-bar { background: #2d2d2d; padding: 6px 16px; font-size: 12px; color: #888; border-top: 1px solid #404040; display: flex; justify-content: space-between; }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 24px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000; }
+        .toast.show { opacity: 1; }
+        .template-dropdown { position: relative; }
+        .template-menu { position: absolute; top: 100%; right: 0; background: #2d2d2d; border: 1px solid #404040; border-radius: 8px; padding: 8px 0; min-width: 200px; display: none; z-index: 100; }
+        .template-menu.show { display: block; }
+        .template-item { padding: 8px 16px; color: #d4d4d4; cursor: pointer; font-size: 13px; }
+        .template-item:hover { background: #404040; }
+        .resize-handle { width: 4px; background: #404040; cursor: col-resize; transition: background 0.2s; }
+        .resize-handle:hover { background: #4a90d9; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 HTML 实时渲染预览</h1>
+        <div class="header-actions">
+            <div class="template-dropdown">
+                <button class="btn-secondary" onclick="toggleTemplateMenu()">📄 模板</button>
+                <div class="template-menu" id="templateMenu">
+                    <div class="template-item" onclick="loadTemplate('blank')">空白页面</div>
+                    <div class="template-item" onclick="loadTemplate('basic')">基础HTML结构</div>
+                    <div class="template-item" onclick="loadTemplate('button')">按钮组件</div>
+                    <div class="template-item" onclick="loadTemplate('card')">卡片布局</div>
+                    <div class="template-item" onclick="loadTemplate('form')">表单示例</div>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="pasteAndRender()">📋 粘贴并渲染</button>
+            <button class="btn-success" onclick="copyHTML()">📥 复制HTML</button>
+            <button class="btn-secondary" onclick="clearEditor()">🗑️ 清空</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="editor-panel" id="editorPanel">
+            <div class="panel-header">📝 HTML 编辑器</div>
+            <div class="editor-wrapper">
+                <textarea id="editor" placeholder="在此粘贴或输入 HTML 代码...&#10;&#10;例如：&#10;<h1>Hello World</h1>&#10;<p>这是一个实时预览工具</p>" spellcheck="false"></textarea>
+            </div>
+        </div>
+
+        <div class="resize-handle" id="resizeHandle"></div>
+
+        <div class="preview-panel" id="previewPanel">
+            <div class="panel-header">👁️ 实时预览</div>
+            <iframe class="preview-frame" id="previewFrame" sandbox="allow-scripts allow-same-origin"></iframe>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <span id="charCount">0 字符</span>
+        <span id="statusText">就绪</span>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const editor = document.getElementById('editor');
+        const previewFrame = document.getElementById('previewFrame');
+        const charCount = document.getElementById('charCount');
+        const statusText = document.getElementById('statusText');
+        const toastEl = document.getElementById('toast');
+        const templateMenu = document.getElementById('templateMenu');
+        const editorPanel = document.getElementById('editorPanel');
+        const previewPanel = document.getElementById('previewPanel');
+        const resizeHandle = document.getElementById('resizeHandle');
+
+        let renderTimeout;
+
+        const templates = {
+            blank: '',
+            basic: '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>我的页面</title>\n    <style>\n        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }\n    </style>\n</head>\n<body>\n    <h1>Hello World</h1>\n    <p>这是一个基础HTML页面</p>\n</body>\n</html>',
+            button: '<button style="padding: 12px 24px; background: #4a90d9; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">点击我</button>\n\n<button style="padding: 12px 24px; background: #27ae60; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin-left: 10px;">成功按钮</button>',
+            card: '<div style="max-width: 400px; margin: 40px auto; background: white; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.1); overflow: hidden;">\n    <div style="height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>\n    <div style="padding: 20px;">\n        <h2 style="margin: 0 0 10px 0;">卡片标题</h2>\n        <p style="color: #666; margin: 0;">这是一段卡片描述文字，可以放置一些简短的说明内容。</p>\n        <button style="margin-top: 15px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">了解更多</button>\n    </div>\n</div>',
+            form: '<form style="max-width: 400px; margin: 40px auto; padding: 30px; background: #f5f5f5; border-radius: 12px;">\n    <h2 style="margin: 0 0 20px 0;">用户登录</h2>\n    <div style="margin-bottom: 15px;">\n        <label style="display: block; margin-bottom: 5px; font-size: 14px;">用户名</label>\n        <input type="text" placeholder="请输入用户名" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">\n    </div>\n    <div style="margin-bottom: 20px;">\n        <label style="display: block; margin-bottom: 5px; font-size: 14px;">密码</label>\n        <input type="password" placeholder="请输入密码" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">\n    </div>\n    <button type="submit" style="width: 100%; padding: 12px; background: #4a90d9; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer;">登录</button>\n</form>'
+        };
+
+        function updatePreview() {
+            const html = editor.value;
+            const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+            doc.open(); doc.write(html); doc.close();
+            charCount.textContent = html.length + ' 字符';
+            statusText.textContent = '已更新';
+        }
+
+        editor.addEventListener('input', () => {
+            clearTimeout(renderTimeout);
+            statusText.textContent = '输入中...';
+            renderTimeout = setTimeout(updatePreview, 300);
+        });
+
+        async function pasteAndRender() {
+            try { const text = await navigator.clipboard.readText(); editor.value = text; updatePreview(); showToast('已粘贴并渲染 ✅'); } catch (e) { editor.focus(); showToast('请手动粘贴（Ctrl+V）'); }
+        }
+
+        function copyHTML() {
+            const text = editor.value;
+            if (!text) { showToast('没有可复制的内容'); return; }
+            navigator.clipboard.writeText(text).then(() => showToast('已复制HTML代码 ✅')).catch(() => { editor.select(); document.execCommand('copy'); showToast('已复制HTML代码 ✅'); });
+        }
+
+        function clearEditor() { editor.value = ''; updatePreview(); editor.focus(); showToast('已清空'); }
+
+        function loadTemplate(name) { editor.value = templates[name]; updatePreview(); templateMenu.classList.remove('show'); showToast('已加载模板'); }
+
+        function toggleTemplateMenu() { templateMenu.classList.toggle('show'); }
+
+        document.addEventListener('click', (e) => { if (!e.target.closest('.template-dropdown')) templateMenu.classList.remove('show'); });
+
+        function showToast(message) { toastEl.textContent = message; toastEl.classList.add('show'); clearTimeout(toastEl._timeout); toastEl._timeout = setTimeout(() => toastEl.classList.remove('show'), 2000); }
+
+        let isResizing = false;
+        resizeHandle.addEventListener('mousedown', (e) => { isResizing = true; document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none'; });
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            const containerRect = document.querySelector('.main-container').getBoundingClientRect();
+            const percentage = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+            const clamped = Math.max(20, Math.min(80, percentage));
+            editorPanel.style.width = clamped + '%';
+            previewPanel.style.width = (100 - clamped) + '%';
+        });
+        document.addEventListener('mouseup', () => { isResizing = false; document.body.style.cursor = ''; document.body.style.userSelect = ''; });
+
+        editor.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = editor.selectionStart; const end = editor.selectionEnd;
+                editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
+                editor.selectionStart = editor.selectionEnd = start + 2;
+                updatePreview();
+            }
+        });
+
+        editor.focus();
+    </script>
+</body>
+</html>
