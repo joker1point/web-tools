@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文本清理替换工具</title>
+    <title>????????</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -72,54 +72,54 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>✂️ 文本清理替换工具</h1>
-            <p>去除特殊符号 + 自定义文字替换</p>
+            <h1>?? ????????</h1>
+            <p>?????? + ???????</p>
         </div>
 
         <div class="stats-bar">
-            <div class="stat-item"><div class="stat-value" id="totalChars">0</div><div class="stat-label">总字符数</div></div>
-            <div class="stat-item"><div class="stat-value" id="specialCount">0</div><div class="stat-label">特殊符号数</div></div>
-            <div class="stat-item replace"><div class="stat-value" id="replaceCount">0</div><div class="stat-label">替换次数</div></div>
-            <div class="stat-item clean"><div class="stat-value" id="cleanChars">0</div><div class="stat-label">处理后字符数</div></div>
+            <div class="stat-item"><div class="stat-value" id="totalChars">0</div><div class="stat-label">????</div></div>
+            <div class="stat-item"><div class="stat-value" id="specialCount">0</div><div class="stat-label">?????</div></div>
+            <div class="stat-item replace"><div class="stat-value" id="replaceCount">0</div><div class="stat-label">????</div></div>
+            <div class="stat-item clean"><div class="stat-value" id="cleanChars">0</div><div class="stat-label">??????</div></div>
         </div>
 
         <div class="replace-section">
-            <h3>🔄 自定义替换规则</h3>
+            <h3>?? ???????</h3>
             <div class="toggle-switch">
                 <div class="toggle" id="replaceToggle" onclick="toggleReplace()"></div>
-                <label for="replaceToggle">启用自定义替换</label>
+                <label for="replaceToggle">???????</label>
             </div>
             <div class="preset-tags" id="presetTags">
-                <span class="preset-tag" onclick="addPreset('熊大', '图中动物')">熊大 → 图中动物</span>
-                <span class="preset-tag" onclick="addPreset('熊二', '图中动物')">熊二 → 图中动物</span>
-                <span class="preset-tag" onclick="addPreset('光头强', '伐木工人')">光头强 → 伐木工人</span>
+                <span class="preset-tag" onclick="addPreset('??', '????')">?? ? ????</span>
+                <span class="preset-tag" onclick="addPreset('??', '????')">?? ? ????</span>
+                <span class="preset-tag" onclick="addPreset('???', '????')">??? ? ????</span>
             </div>
             <div class="replace-rules" id="replaceRules">
                 <div class="replace-rule">
-                    <input type="text" class="replace-from" placeholder="要替换的文字" value="熊大">
-                    <span class="arrow">→</span>
-                    <input type="text" class="replace-to" placeholder="替换成">
-                    <button class="btn-remove" onclick="removeRule(this)">删除</button>
+                    <input type="text" class="replace-from" placeholder="??????" value="??">
+                    <span class="arrow">?</span>
+                    <input type="text" class="replace-to" placeholder="???">
+                    <button class="btn-remove" onclick="removeRule(this)">??</button>
                 </div>
             </div>
-            <button class="btn-add" style="margin-top: 10px; width: 100%;" onclick="addRule()">+ 添加替换规则</button>
+            <button class="btn-add" style="margin-top: 10px; width: 100%;" onclick="addRule()">+ ??????</button>
         </div>
 
         <div class="section">
-            <div class="section-label"><span>📝 输入文本</span><span class="badge" id="inputBadge">0 字符</span></div>
-            <textarea id="input" placeholder="在此粘贴或输入文本..."></textarea>
+            <div class="section-label"><span>?? ????</span><span class="badge" id="inputBadge">0 ??</span></div>
+            <textarea id="input" placeholder="?????????..."></textarea>
         </div>
 
         <div class="section">
-            <div class="section-label"><span>✅ 处理结果</span><span class="badge" id="outputBadge">0 字符</span></div>
-            <textarea id="output" placeholder="处理后的文本将显示在这里..." readonly></textarea>
+            <div class="section-label"><span>? ????</span><span class="badge" id="outputBadge">0 ??</span></div>
+            <textarea id="output" placeholder="????????????..." readonly></textarea>
         </div>
 
         <div class="btn-row">
-            <button class="btn-primary" onclick="copyOutput()">📋 复制结果</button>
-            <button class="btn-secondary" onclick="clearAll()">🗑️ 清空</button>
-            <button class="btn-danger" onclick="pasteAndClean()">📥 粘贴并处理</button>
-            <button class="btn-warning" onclick="removeHashesOnly()"># 一键去井号与星号</button>
+            <button class="btn-primary" onclick="copyOutput()">?? ????</button>
+            <button class="btn-secondary" onclick="clearAll()">??? ??</button>
+            <button class="btn-danger" onclick="pasteAndClean()">?? ?????</button>
+            <button class="btn-warning" onclick="removeHashesOnly()"># ????????</button>
         </div>
     </div>
 
@@ -166,8 +166,8 @@
             specialCountEl.textContent = countSpecialChars(inputText);
             replaceCountEl.textContent = replaceCount;
             cleanCharsEl.textContent = outputText.length;
-            inputBadge.textContent = inputText.length + ' 字符';
-            outputBadge.textContent = outputText.length + ' 字符';
+            inputBadge.textContent = inputText.length + ' ??';
+            outputBadge.textContent = outputText.length + ' ??';
         }
 
         function processText() {
@@ -191,7 +191,7 @@
         function addRule() {
             const rule = document.createElement('div');
             rule.className = 'replace-rule';
-            rule.innerHTML = '<input type="text" class="replace-from" placeholder="要替换的文字"><span class="arrow">→</span><input type="text" class="replace-to" placeholder="替换成"><button class="btn-remove" onclick="removeRule(this)">删除</button>';
+            rule.innerHTML = '<input type="text" class="replace-from" placeholder="??????"><span class="arrow">?</span><input type="text" class="replace-to" placeholder="???"><button class="btn-remove" onclick="removeRule(this)">??</button>';
             replaceRules.appendChild(rule);
             rule.querySelectorAll('input').forEach(input => input.addEventListener('input', processText));
             processText();
@@ -217,31 +217,31 @@
                 lastRule.querySelector('.replace-to').value = to;
             }
             processText();
-            showToast('已添加替换: ' + from + ' → ' + to);
+            showToast('?????: ' + from + ' ? ' + to);
         }
 
         function copyOutput() {
             const text = outputEl.value;
-            if (!text) { showToast('没有可复制的内容'); return; }
-            navigator.clipboard.writeText(text).then(() => showToast('已复制到剪贴板 ✅')).catch(() => { outputEl.select(); document.execCommand('copy'); showToast('已复制到剪贴板 ✅'); });
+            if (!text) { showToast('????????'); return; }
+            navigator.clipboard.writeText(text).then(() => showToast('??????? ?')).catch(() => { outputEl.select(); document.execCommand('copy'); showToast('??????? ?'); });
         }
 
         function clearAll() {
             inputEl.value = ''; outputEl.value = '';
-            replaceRules.innerHTML = '<div class="replace-rule"><input type="text" class="replace-from" placeholder="要替换的文字" value="熊大"><span class="arrow">→</span><input type="text" class="replace-to" placeholder="替换成"><button class="btn-remove" onclick="removeRule(this)">删除</button></div>';
-            updateStats('', '', 0); inputEl.focus(); showToast('已清空');
+            replaceRules.innerHTML = '<div class="replace-rule"><input type="text" class="replace-from" placeholder="??????" value="??"><span class="arrow">?</span><input type="text" class="replace-to" placeholder="???"><button class="btn-remove" onclick="removeRule(this)">??</button></div>';
+            updateStats('', '', 0); inputEl.focus(); showToast('???');
         }
 
         async function pasteAndClean() {
-            try { const text = await navigator.clipboard.readText(); inputEl.value = text; processText(); showToast('已粘贴并处理 ✅'); } catch (e) { inputEl.focus(); showToast('请手动粘贴（Ctrl+V）'); }
+            try { const text = await navigator.clipboard.readText(); inputEl.value = text; processText(); showToast('?????? ?'); } catch (e) { inputEl.focus(); showToast('?????(Ctrl+V)'); }
         }
 
         function removeHashesOnly() {
             const inputText = inputEl.value;
-            if (!inputText) { showToast('没有可处理的文本'); return; }
+            if (!inputText) { showToast('????????'); return; }
             const cleaned = removeSpecialChars(inputText);
             outputEl.value = cleaned; updateStats(inputText, cleaned, 0);
-            showToast('已去除 # 和 * ✅');
+            showToast('??? # ? * ?');
         }
 
         function showToast(message) {
