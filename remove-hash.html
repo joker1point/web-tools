@@ -6,15 +6,8 @@
     <title>文本清理替换工具</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: #f5f5f5; min-height: 100vh; display: flex;
-            justify-content: center; align-items: flex-start; padding: 20px;
-        }
-        .container {
-            width: 100%; max-width: 900px; background: #fff; border-radius: 12px;
-            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08); padding: 32px; margin-top: 20px;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f5f5f5; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 20px; }
+        .container { width: 100%; max-width: 900px; background: #fff; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); padding: 32px; margin-top: 20px; }
         .header { text-align: center; margin-bottom: 28px; }
         .header h1 { font-size: 24px; color: #1a1a1a; margin-bottom: 6px; }
         .header p { font-size: 14px; color: #888; }
@@ -22,11 +15,7 @@
         .section-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .section-label span { font-size: 14px; font-weight: 600; color: #333; }
         .section-label .badge { font-size: 12px; color: #888; background: #f0f0f0; padding: 2px 10px; border-radius: 10px; }
-        textarea {
-            width: 100%; min-height: 180px; border: 2px solid #e0e0e0; border-radius: 8px;
-            padding: 14px 16px; font-size: 15px; line-height: 1.6; resize: vertical;
-            font-family: inherit; transition: border-color 0.2s; outline: none;
-        }
+        textarea { width: 100%; min-height: 180px; border: 2px solid #e0e0e0; border-radius: 8px; padding: 14px 16px; font-size: 15px; line-height: 1.6; resize: vertical; font-family: inherit; transition: border-color 0.2s; outline: none; }
         textarea:focus { border-color: #4a90d9; }
         textarea#output { background: #fafafa; color: #333; }
         .stats-bar { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
@@ -72,19 +61,17 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>✂️ 文本清理替换工具</h1>
+            <h1>文本清理替换工具</h1>
             <p>去除特殊符号 + 自定义文字替换</p>
         </div>
-
         <div class="stats-bar">
             <div class="stat-item"><div class="stat-value" id="totalChars">0</div><div class="stat-label">总字符数</div></div>
             <div class="stat-item"><div class="stat-value" id="specialCount">0</div><div class="stat-label">特殊符号数</div></div>
             <div class="stat-item replace"><div class="stat-value" id="replaceCount">0</div><div class="stat-label">替换次数</div></div>
             <div class="stat-item clean"><div class="stat-value" id="cleanChars">0</div><div class="stat-label">处理后字符数</div></div>
         </div>
-
         <div class="replace-section">
-            <h3>🔄 自定义替换规则</h3>
+            <h3>自定义替换规则</h3>
             <div class="toggle-switch">
                 <div class="toggle" id="replaceToggle" onclick="toggleReplace()"></div>
                 <label for="replaceToggle">启用自定义替换</label>
@@ -104,27 +91,22 @@
             </div>
             <button class="btn-add" style="margin-top: 10px; width: 100%;" onclick="addRule()">+ 添加替换规则</button>
         </div>
-
         <div class="section">
-            <div class="section-label"><span>📝 输入文本</span><span class="badge" id="inputBadge">0 字符</span></div>
+            <div class="section-label"><span>输入文本</span><span class="badge" id="inputBadge">0 字符</span></div>
             <textarea id="input" placeholder="在此粘贴或输入文本..."></textarea>
         </div>
-
         <div class="section">
-            <div class="section-label"><span>✅ 处理结果</span><span class="badge" id="outputBadge">0 字符</span></div>
+            <div class="section-label"><span>处理结果</span><span class="badge" id="outputBadge">0 字符</span></div>
             <textarea id="output" placeholder="处理后的文本将显示在这里..." readonly></textarea>
         </div>
-
         <div class="btn-row">
-            <button class="btn-primary" onclick="copyOutput()">📋 复制结果</button>
-            <button class="btn-secondary" onclick="clearAll()">🗑️ 清空</button>
-            <button class="btn-danger" onclick="pasteAndClean()">📥 粘贴并处理</button>
-            <button class="btn-warning" onclick="removeHashesOnly()"># 一键去井号与星号</button>
+            <button class="btn-primary" onclick="copyOutput()">复制结果</button>
+            <button class="btn-secondary" onclick="clearAll()">清空</button>
+            <button class="btn-danger" onclick="pasteAndClean()">粘贴并处理</button>
+            <button class="btn-warning" onclick="removeHashesOnly()">一键去井号与星号</button>
         </div>
     </div>
-
     <div class="toast" id="toast"></div>
-
     <script>
         const inputEl = document.getElementById('input');
         const outputEl = document.getElementById('output');
@@ -137,7 +119,6 @@
         const toastEl = document.getElementById('toast');
         const replaceToggle = document.getElementById('replaceToggle');
         const replaceRules = document.getElementById('replaceRules');
-
         let replaceEnabled = true;
         let totalReplaceCount = 0;
 
@@ -223,7 +204,7 @@
         function copyOutput() {
             const text = outputEl.value;
             if (!text) { showToast('没有可复制的内容'); return; }
-            navigator.clipboard.writeText(text).then(() => showToast('已复制到剪贴板 ✅')).catch(() => { outputEl.select(); document.execCommand('copy'); showToast('已复制到剪贴板 ✅'); });
+            navigator.clipboard.writeText(text).then(() => showToast('已复制到剪贴板')).catch(() => { outputEl.select(); document.execCommand('copy'); showToast('已复制到剪贴板'); });
         }
 
         function clearAll() {
@@ -233,7 +214,7 @@
         }
 
         async function pasteAndClean() {
-            try { const text = await navigator.clipboard.readText(); inputEl.value = text; processText(); showToast('已粘贴并处理 ✅'); } catch (e) { inputEl.focus(); showToast('请手动粘贴（Ctrl+V）'); }
+            try { const text = await navigator.clipboard.readText(); inputEl.value = text; processText(); showToast('已粘贴并处理'); } catch (e) { inputEl.focus(); showToast('请手动粘贴(Ctrl+V)'); }
         }
 
         function removeHashesOnly() {
@@ -241,7 +222,7 @@
             if (!inputText) { showToast('没有可处理的文本'); return; }
             const cleaned = removeSpecialChars(inputText);
             outputEl.value = cleaned; updateStats(inputText, cleaned, 0);
-            showToast('已去除 # 和 * ✅');
+            showToast('已去除 # 和 *');
         }
 
         function showToast(message) {
