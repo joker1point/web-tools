@@ -2,6 +2,8 @@
 
 两个开箱即用的纯前端工具，无需安装，浏览器打开即可使用。
 
+一键体验链接：https://joker1point.github.io/web-tools/html-preview.html
+
 ##  工具列表
 
 ### 1. 文本清理替换工具 ([remove-hash.html](remove-hash.html))
