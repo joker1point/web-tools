@@ -21,7 +21,7 @@
         .editor-panel { width: 50%; display: flex; flex-direction: column; border-right: 1px solid #404040; }
         .panel-header { background: #2d2d2d; padding: 8px 16px; font-size: 13px; color: #888; border-bottom: 1px solid #404040; }
         .editor-wrapper { flex: 1; position: relative; }
-        textarea { width: 100%; height: 100%; background: #1e1e1e; color: #d4d4d4; border: none; padding: 16px; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 14px; line-height: 1.6; resize: none; outline: none; tab-size: 2; }
+        textarea { width: 100%; height: 100%; background: transparent; color: transparent; border: none; padding: 16px; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 14px; line-height: 1.6; resize: none; outline: none; tab-size: 2; caret-color: #d4d4d4; position: relative; z-index: 1; }
         .preview-panel { width: 50%; display: flex; flex-direction: column; }
         .preview-frame { flex: 1; border: none; background: #fff; }
         .status-bar { background: #2d2d2d; padding: 6px 16px; font-size: 12px; color: #888; border-top: 1px solid #404040; display: flex; justify-content: space-between; }
@@ -43,6 +43,11 @@
         .search-bar button:disabled { opacity: 0.4; cursor: not-allowed; }
         .search-highlight { background: #ffeb3b !important; color: #333 !important; border-radius: 2px; }
         .search-highlight-cur { background: #ff9800 !important; color: #333 !important; border-radius: 2px; }
+        .code-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 16px; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 14px; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; overflow: hidden; pointer-events: none; color: transparent; }
+        .code-overlay .hl { background: #ffeb3b; color: #333; border-radius: 2px; }
+        .code-overlay .hl-cur { background: #ff9800; color: #333; border-radius: 2px; }
+        .editor-wrapper { position: relative; }
+        .editor-mirror { position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 16px; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 14px; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; overflow-y: auto; overflow-x: hidden; color: #d4d4d4; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -77,6 +82,7 @@
             <div class="panel-header">📝 HTML 编辑器</div>
             <div class="editor-wrapper">
                 <textarea id="editor" placeholder="在此粘贴或输入 HTML 代码...&#10;&#10;例如：&#10;<h1>Hello World</h1>&#10;<p>这是一个实时预览工具</p>" spellcheck="false"></textarea>
+                <div class="editor-mirror" id="codeMirror"></div>
             </div>
         </div>
 
@@ -168,71 +174,103 @@
         let currentMatchIndex = -1;
         let totalMatches = 0;
         let searchTimer;
+        const codeMirror = document.getElementById('codeMirror');
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
 
         function doSearch(keyword) {
-            const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
-            if (!doc.body) return;
-            clearHighlights(doc);
+            clearHighlightsAll();
             currentMatchIndex = -1;
             totalMatches = 0;
             if (!keyword || keyword.trim() === '') {
-                document.getElementById('searchCount').textContent = '0/0';
-                document.getElementById('searchPrev').disabled = true;
-                document.getElementById('searchNext').disabled = true;
+                updateSearchUI();
                 return;
             }
-            const walker = document.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null, false);
-            const nodes = [];
-            while (walker.nextNode()) nodes.push(walker.currentNode);
-            const matches = [];
-            nodes.forEach(node => {
-                const text = node.textContent;
-                const regex = new RegExp(keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-                let match;
-                while ((match = regex.exec(text)) !== null) {
-                    matches.push({ node, index: match.index, text: match[0] });
-                }
+            const regex = new RegExp(keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+
+            // Editor mirror highlighting
+            const code = editor.value;
+            let match;
+            const editorMatches = [];
+            while ((match = regex.exec(code)) !== null) {
+                editorMatches.push({ index: match.index, text: match[0] });
+            }
+
+            let highlighted = '';
+            let lastIndex = 0;
+            editorMatches.forEach((m) => {
+                highlighted += escapeHtml(code.substring(lastIndex, m.index));
+                highlighted += '<span class="hl">' + escapeHtml(m.text) + '</span>';
+                lastIndex = m.index + m.text.length;
             });
-            totalMatches = matches.length;
-            matches.forEach((m, i) => {
-                const span = doc.createElement('span');
-                span.className = 'search-highlight';
-                span.dataset.matchIndex = i;
-                const text = m.node.textContent;
-                const before = text.substring(0, m.index);
-                const after = text.substring(m.index + m.text.length);
-                const parent = m.node.parentNode;
-                const wrapped = doc.createDocumentFragment();
-                wrapped.appendChild(doc.createTextNode(before));
-                wrapped.appendChild(span);
-                span.appendChild(doc.createTextNode(m.text));
-                wrapped.appendChild(doc.createTextNode(after));
-                parent.replaceChild(wrapped, m.node);
-            });
+            highlighted += escapeHtml(code.substring(lastIndex));
+            codeMirror.innerHTML = highlighted;
+
+            // Preview highlighting
+            const doc = previewFrame.contentDocument;
+            if (doc && doc.body) {
+                const walker = document.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null, false);
+                const nodes = [];
+                while (walker.nextNode()) nodes.push(walker.currentNode);
+                nodes.forEach(node => {
+                    const text = node.textContent;
+                    let m;
+                    while ((m = regex.exec(text)) !== null) {
+                        const span = doc.createElement('span');
+                        span.className = 'search-highlight';
+                        const before = doc.createTextNode(text.substring(0, m.index));
+                        const after = doc.createTextNode(text.substring(m.index + m.text.length));
+                        const hlText = doc.createTextNode(m.text);
+                        span.appendChild(hlText);
+                        const frag = doc.createDocumentFragment();
+                        frag.appendChild(before);
+                        frag.appendChild(span);
+                        frag.appendChild(after);
+                        node.parentNode.replaceChild(frag, node);
+                        regex.lastIndex = 0;
+                    }
+                });
+            }
+
+            totalMatches = editorMatches.length;
             if (totalMatches > 0) {
                 currentMatchIndex = 0;
-                scrollToMatch(0, doc);
+                scrollToMatch(0);
             }
             updateSearchUI();
         }
 
-        function clearHighlights(doc) {
-            const highlights = doc.querySelectorAll('.search-highlight');
-            highlights.forEach(h => {
-                const parent = h.parentNode;
-                while (h.firstChild) parent.insertBefore(h.firstChild, h);
-                parent.removeChild(h);
-                parent.normalize();
-            });
+        function clearHighlightsAll() {
+            codeMirror.innerHTML = escapeHtml(editor.value);
+            const doc = previewFrame.contentDocument;
+            if (doc && doc.body) {
+                doc.querySelectorAll('.search-highlight').forEach(h => {
+                    const parent = h.parentNode;
+                    while (h.firstChild) parent.insertBefore(h.firstChild, h);
+                    parent.removeChild(h);
+                    parent.normalize();
+                });
+            }
         }
 
-        function scrollToMatch(index, doc) {
-            const allHighlights = doc.querySelectorAll('.search-highlight');
-            if (!allHighlights[index]) return;
-            allHighlights.forEach(h => h.classList.remove('search-highlight-cur'));
-            const target = allHighlights[index];
-            target.classList.add('search-highlight-cur');
+        function scrollToMatch(index) {
+            const allHls = codeMirror.querySelectorAll('.hl');
+            if (!allHls[index]) return;
+            allHls.forEach(h => h.classList.remove('hl-cur'));
+            const target = allHls[index];
+            target.classList.add('hl-cur');
             target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const doc = previewFrame.contentDocument;
+            if (doc && doc.body) {
+                doc.querySelectorAll('.search-highlight').forEach(h => h.classList.remove('search-highlight-cur'));
+                const previewHls = doc.querySelectorAll('.search-highlight');
+                if (previewHls[index]) {
+                    previewHls[index].classList.add('search-highlight-cur');
+                    previewHls[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
         }
 
         function updateSearchUI() {
@@ -240,7 +278,8 @@
             const prevBtn = document.getElementById('searchPrev');
             const nextBtn = document.getElementById('searchNext');
             if (totalMatches === 0) {
-                countEl.textContent = '0/0';
+                const kw = document.getElementById('searchInput').value.trim();
+                countEl.textContent = kw ? '0/0' : '0/0';
                 prevBtn.disabled = true;
                 nextBtn.disabled = true;
             } else {
@@ -251,28 +290,22 @@
         }
 
         function highlightNext() {
-            const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
-            const allHighlights = doc.querySelectorAll('.search-highlight');
-            if (allHighlights.length === 0) return;
+            if (totalMatches === 0) return;
             currentMatchIndex = (currentMatchIndex + 1) % totalMatches;
-            scrollToMatch(currentMatchIndex, doc);
+            scrollToMatch(currentMatchIndex);
             updateSearchUI();
         }
 
         function highlightPrev() {
-            const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
-            const allHighlights = doc.querySelectorAll('.search-highlight');
-            if (allHighlights.length === 0) return;
+            if (totalMatches === 0) return;
             currentMatchIndex = (currentMatchIndex - 1 + totalMatches) % totalMatches;
-            scrollToMatch(currentMatchIndex, doc);
+            scrollToMatch(currentMatchIndex);
             updateSearchUI();
         }
 
         function clearSearch() {
-            const searchInput = document.getElementById('searchInput');
-            searchInput.value = '';
-            const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
-            clearHighlights(doc);
+            document.getElementById('searchInput').value = '';
+            clearHighlightsAll();
             currentMatchIndex = -1;
             totalMatches = 0;
             updateSearchUI();
@@ -281,6 +314,17 @@
         document.getElementById('searchInput').addEventListener('input', (e) => {
             clearTimeout(searchTimer);
             searchTimer = setTimeout(() => doSearch(e.target.value), 300);
+        });
+
+        editor.addEventListener('scroll', () => {
+            codeMirror.scrollTop = editor.scrollTop;
+            codeMirror.scrollLeft = editor.scrollLeft;
+        });
+
+        editor.addEventListener('input', () => {
+            codeMirror.innerHTML = escapeHtml(editor.value);
+            const kw = document.getElementById('searchInput').value.trim();
+            if (kw) doSearch(kw);
         });
 
         editor.addEventListener('keydown', (e) => {
