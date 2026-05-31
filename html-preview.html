@@ -17,13 +17,28 @@
         .btn-secondary:hover { background: #505050; }
         .btn-success { background: #27ae60; color: #fff; }
         .btn-success:hover { background: #1e8449; }
-        .main-container { display: flex; flex: 1; height: calc(100vh - 56px); }
-        .editor-panel { width: 50%; display: flex; flex-direction: column; border-right: 1px solid #404040; }
-        .panel-header { background: #2d2d2d; padding: 8px 16px; font-size: 13px; color: #888; border-bottom: 1px solid #404040; }
+        .main-container { display: flex; flex: 1; height: calc(100vh - 56px); transition: all 0.3s ease; }
+        .editor-panel { width: 50%; display: flex; flex-direction: column; border-right: 1px solid #404040; transition: border-color 0.3s, box-shadow 0.3s; position: relative; }
+        .editor-panel.active { border-right-color: #4a90d9; box-shadow: inset 3px 0 0 #4a90d9; }
+        .editor-panel.active .panel-header { background: #2d2d2d; border-bottom-color: #4a90d9; color: #4a90d9; }
+        .panel-header { background: #2d2d2d; padding: 8px 16px; font-size: 13px; color: #888; border-bottom: 1px solid #404040; display: flex; justify-content: space-between; align-items: center; transition: color 0.3s, border-color 0.3s; }
+        .panel-header-left { display: flex; align-items: center; gap: 8px; }
+        .panel-header-right { display: flex; align-items: center; gap: 6px; }
+        .panel-swap-btn { background: transparent; border: 1px solid #555; color: #888; padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s; }
+        .panel-swap-btn:hover { background: #404040; color: #fff; border-color: #888; }
+        .panel-indicator { width: 3px; height: 16px; border-radius: 2px; transition: all 0.3s; }
+        .panel-indicator.editor-ind { background: #555; }
+        .panel-indicator.preview-ind { background: #555; }
+        .editor-panel.active .panel-indicator.editor-ind { background: #4a90d9; box-shadow: 0 0 6px #4a90d9; }
+        .preview-panel.active .panel-indicator.preview-ind { background: #27ae60; box-shadow: 0 0 6px #27ae60; }
         .editor-wrapper { flex: 1; position: relative; }
         textarea { width: 100%; height: 100%; background: transparent; color: transparent; border: none; padding: 16px; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 14px; line-height: 1.6; resize: none; outline: none; tab-size: 2; caret-color: #d4d4d4; position: relative; z-index: 1; }
-        .preview-panel { width: 50%; display: flex; flex-direction: column; }
+        .preview-panel { width: 50%; display: flex; flex-direction: column; transition: border-color 0.3s, box-shadow 0.3s; position: relative; }
+        .preview-panel.active { border-left: 3px solid #27ae60; box-shadow: inset -3px 0 0 #27ae60; }
+        .preview-panel.active .panel-header { background: #2d2d2d; border-bottom-color: #27ae60; color: #27ae60; }
         .preview-frame { flex: 1; border: none; background: #fff; }
+        .panel-enter { animation: panelSlideIn 0.3s ease; }
+        @keyframes panelSlideIn { from { opacity: 0.5; transform: scaleX(0.97); } to { opacity: 1; transform: scaleX(1); } }
         .status-bar { background: #2d2d2d; padding: 6px 16px; font-size: 12px; color: #888; border-top: 1px solid #404040; display: flex; justify-content: space-between; }
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 24px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000; }
         .toast.show { opacity: 1; }
@@ -88,7 +103,15 @@
 
     <div class="main-container">
         <div class="editor-panel" id="editorPanel">
-            <div class="panel-header">📝 HTML 编辑器</div>
+            <div class="panel-header">
+                <div class="panel-header-left">
+                    <span class="panel-indicator editor-ind"></span>
+                    <span>📝 HTML 编辑器</span>
+                </div>
+                <div class="panel-header-right">
+                    <button class="panel-swap-btn" onclick="swapPanels()" title="交换面板位置">⇄ 交换</button>
+                </div>
+            </div>
             <div class="editor-wrapper">
                 <textarea id="editor" placeholder="在此粘贴或输入 HTML 代码...&#10;&#10;例如：&#10;<h1>Hello World</h1>&#10;<p>这是一个实时预览工具</p>" spellcheck="false"></textarea>
                 <div class="editor-mirror" id="codeMirror"></div>
@@ -98,7 +121,15 @@
         <div class="resize-handle" id="resizeHandle"></div>
 
         <div class="preview-panel" id="previewPanel">
-            <div class="panel-header">👁️ 实时预览</div>
+            <div class="panel-header">
+                <div class="panel-header-left">
+                    <span class="panel-indicator preview-ind"></span>
+                    <span>👁️ 实时预览</span>
+                </div>
+                <div class="panel-header-right">
+                    <button class="panel-swap-btn" onclick="swapPanels()" title="交换面板位置">⇄ 交换</button>
+                </div>
+            </div>
             <iframe class="preview-frame" id="previewFrame" sandbox="allow-scripts allow-same-origin"></iframe>
         </div>
     </div>
@@ -247,6 +278,74 @@
             previewPanel.style.width = (100 - clamped) + '%';
         });
         document.addEventListener('mouseup', () => { isResizing = false; document.body.style.cursor = ''; document.body.style.userSelect = ''; });
+
+        let panelsSwapped = false;
+
+        function swapPanels() {
+            const container = document.querySelector('.main-container');
+            const handle = document.getElementById('resizeHandle');
+            panelsSwapped = !panelsSwapped;
+
+            if (panelsSwapped) {
+                container.style.flexDirection = 'row-reverse';
+                editorPanel.style.borderRight = 'none';
+                editorPanel.style.borderLeft = '1px solid #404040';
+                previewPanel.style.borderLeft = 'none';
+                previewPanel.style.borderRight = '1px solid #404040';
+                showToast('已交换面板位置 ⇄');
+            } else {
+                container.style.flexDirection = 'row';
+                editorPanel.style.borderRight = '1px solid #404040';
+                editorPanel.style.borderLeft = 'none';
+                previewPanel.style.borderLeft = 'none';
+                previewPanel.style.borderRight = 'none';
+                showToast('已恢复面板位置 ⇄');
+            }
+
+            editorPanel.classList.add('panel-enter');
+            previewPanel.classList.add('panel-enter');
+            setTimeout(() => {
+                editorPanel.classList.remove('panel-enter');
+                previewPanel.classList.remove('panel-enter');
+            }, 300);
+        }
+
+        editor.addEventListener('focus', () => {
+            editorPanel.classList.add('active');
+            previewPanel.classList.remove('active');
+        });
+
+        editor.addEventListener('blur', () => {
+            setTimeout(() => {
+                if (!editor.matches(':focus') && !document.activeElement?.closest?.('.preview-panel')) {
+                    editorPanel.classList.remove('active');
+                }
+            }, 150);
+        });
+
+        previewFrame.addEventListener('mouseenter', () => {
+            previewPanel.classList.add('active');
+            editorPanel.classList.remove('active');
+        });
+
+        previewFrame.addEventListener('mouseleave', () => {
+            if (!previewFrame.matches(':hover') && !document.activeElement?.closest?.('.editor-panel')) {
+                previewPanel.classList.remove('active');
+            }
+        });
+
+        previewPanel.addEventListener('mouseenter', () => {
+            previewPanel.classList.add('active');
+            editorPanel.classList.remove('active');
+        });
+
+        previewPanel.addEventListener('mouseleave', () => {
+            if (!previewFrame.matches(':hover') && !previewPanel.matches(':hover')) {
+                setTimeout(() => {
+                    if (!previewPanel.matches(':hover')) previewPanel.classList.remove('active');
+                }, 100);
+            }
+        });
 
         let currentMatchIndex = -1;
         let totalMatches = 0;
