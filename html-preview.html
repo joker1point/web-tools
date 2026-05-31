@@ -34,11 +34,27 @@
         .template-item:hover { background: #404040; }
         .resize-handle { width: 4px; background: #404040; cursor: col-resize; transition: background 0.2s; }
         .resize-handle:hover { background: #4a90d9; }
+        .search-bar { display: flex; align-items: center; gap: 6px; background: #363636; padding: 4px 8px; border-radius: 6px; }
+        .search-bar input { background: transparent; border: none; color: #d4d4d4; font-size: 13px; width: 160px; outline: none; }
+        .search-bar input::placeholder { color: #777; }
+        .search-bar button { padding: 4px 8px; background: #404040; border: none; color: #aaa; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .search-bar button:hover { background: #505050; color: #fff; }
+        .search-count { color: #888; font-size: 12px; min-width: 50px; text-align: center; }
+        .search-bar button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .search-highlight { background: #ffeb3b !important; color: #333 !important; border-radius: 2px; }
+        .search-highlight-cur { background: #ff9800 !important; color: #333 !important; border-radius: 2px; }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>🎨 HTML 实时渲染预览</h1>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="搜索关键字..." onkeydown="if(event.key==='Enter')highlightNext()">
+            <span class="search-count" id="searchCount">0/0</span>
+            <button id="searchPrev" onclick="highlightPrev()" title="上一个">▲</button>
+            <button id="searchNext" onclick="highlightNext()" title="下一个">▼</button>
+            <button onclick="clearSearch()" title="清除搜索">✕</button>
+        </div>
         <div class="header-actions">
             <div class="template-dropdown">
                 <button class="btn-secondary" onclick="toggleTemplateMenu()">📄 模板</button>
@@ -106,6 +122,9 @@
             doc.open(); doc.write(html); doc.close();
             charCount.textContent = html.length + ' 字符';
             statusText.textContent = '已更新';
+            if (document.getElementById('searchInput').value.trim() !== '') {
+                clearSearch();
+            }
         }
 
         editor.addEventListener('input', () => {
@@ -145,6 +164,124 @@
             previewPanel.style.width = (100 - clamped) + '%';
         });
         document.addEventListener('mouseup', () => { isResizing = false; document.body.style.cursor = ''; document.body.style.userSelect = ''; });
+
+        let currentMatchIndex = -1;
+        let totalMatches = 0;
+        let searchTimer;
+
+        function doSearch(keyword) {
+            const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+            if (!doc.body) return;
+            clearHighlights(doc);
+            currentMatchIndex = -1;
+            totalMatches = 0;
+            if (!keyword || keyword.trim() === '') {
+                document.getElementById('searchCount').textContent = '0/0';
+                document.getElementById('searchPrev').disabled = true;
+                document.getElementById('searchNext').disabled = true;
+                return;
+            }
+            const walker = document.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null, false);
+            const nodes = [];
+            while (walker.nextNode()) nodes.push(walker.currentNode);
+            const matches = [];
+            nodes.forEach(node => {
+                const text = node.textContent;
+                const regex = new RegExp(keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                let match;
+                while ((match = regex.exec(text)) !== null) {
+                    matches.push({ node, index: match.index, text: match[0] });
+                }
+            });
+            totalMatches = matches.length;
+            matches.forEach((m, i) => {
+                const span = doc.createElement('span');
+                span.className = 'search-highlight';
+                span.dataset.matchIndex = i;
+                const text = m.node.textContent;
+                const before = text.substring(0, m.index);
+                const after = text.substring(m.index + m.text.length);
+                const parent = m.node.parentNode;
+                const wrapped = doc.createDocumentFragment();
+                wrapped.appendChild(doc.createTextNode(before));
+                wrapped.appendChild(span);
+                span.appendChild(doc.createTextNode(m.text));
+                wrapped.appendChild(doc.createTextNode(after));
+                parent.replaceChild(wrapped, m.node);
+            });
+            if (totalMatches > 0) {
+                currentMatchIndex = 0;
+                scrollToMatch(0, doc);
+            }
+            updateSearchUI();
+        }
+
+        function clearHighlights(doc) {
+            const highlights = doc.querySelectorAll('.search-highlight');
+            highlights.forEach(h => {
+                const parent = h.parentNode;
+                while (h.firstChild) parent.insertBefore(h.firstChild, h);
+                parent.removeChild(h);
+                parent.normalize();
+            });
+        }
+
+        function scrollToMatch(index, doc) {
+            const allHighlights = doc.querySelectorAll('.search-highlight');
+            if (!allHighlights[index]) return;
+            allHighlights.forEach(h => h.classList.remove('search-highlight-cur'));
+            const target = allHighlights[index];
+            target.classList.add('search-highlight-cur');
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function updateSearchUI() {
+            const countEl = document.getElementById('searchCount');
+            const prevBtn = document.getElementById('searchPrev');
+            const nextBtn = document.getElementById('searchNext');
+            if (totalMatches === 0) {
+                countEl.textContent = '0/0';
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
+            } else {
+                countEl.textContent = (currentMatchIndex + 1) + '/' + totalMatches;
+                prevBtn.disabled = false;
+                nextBtn.disabled = false;
+            }
+        }
+
+        function highlightNext() {
+            const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+            const allHighlights = doc.querySelectorAll('.search-highlight');
+            if (allHighlights.length === 0) return;
+            currentMatchIndex = (currentMatchIndex + 1) % totalMatches;
+            scrollToMatch(currentMatchIndex, doc);
+            updateSearchUI();
+        }
+
+        function highlightPrev() {
+            const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+            const allHighlights = doc.querySelectorAll('.search-highlight');
+            if (allHighlights.length === 0) return;
+            currentMatchIndex = (currentMatchIndex - 1 + totalMatches) % totalMatches;
+            scrollToMatch(currentMatchIndex, doc);
+            updateSearchUI();
+        }
+
+        function clearSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.value = '';
+            const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+            clearHighlights(doc);
+            currentMatchIndex = -1;
+            totalMatches = 0;
+            updateSearchUI();
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => doSearch(e.target.value), 300);
+        });
 
         editor.addEventListener('keydown', (e) => {
             if (e.key === 'Tab') {
