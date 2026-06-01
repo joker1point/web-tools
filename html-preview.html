@@ -310,40 +310,31 @@
             }, 300);
         }
 
-        editor.addEventListener('focus', () => {
+        function activateEditor() {
             editorPanel.classList.add('active');
             previewPanel.classList.remove('active');
-        });
+        }
 
-        editor.addEventListener('blur', () => {
-            setTimeout(() => {
-                if (!editor.matches(':focus') && !document.activeElement?.closest?.('.preview-panel')) {
-                    editorPanel.classList.remove('active');
-                }
-            }, 150);
-        });
-
-        previewFrame.addEventListener('mouseenter', () => {
+        function activatePreview() {
             previewPanel.classList.add('active');
             editorPanel.classList.remove('active');
-        });
+        }
 
-        previewFrame.addEventListener('mouseleave', () => {
-            if (!previewFrame.matches(':hover') && !document.activeElement?.closest?.('.editor-panel')) {
-                previewPanel.classList.remove('active');
-            }
-        });
-
-        previewPanel.addEventListener('mouseenter', () => {
-            previewPanel.classList.add('active');
+        function clearPanelActive() {
             editorPanel.classList.remove('active');
-        });
+            previewPanel.classList.remove('active');
+        }
 
-        previewPanel.addEventListener('mouseleave', () => {
-            if (!previewFrame.matches(':hover') && !previewPanel.matches(':hover')) {
-                setTimeout(() => {
-                    if (!previewPanel.matches(':hover')) previewPanel.classList.remove('active');
-                }, 100);
+        editor.addEventListener('focus', activateEditor);
+        editor.addEventListener('click', activateEditor);
+        
+        previewFrame.addEventListener('mouseenter', activatePreview);
+        previewPanel.addEventListener('mouseenter', activatePreview);
+        
+        document.addEventListener('click', (e) => {
+            const target = e.target;
+            if (!target.closest('.editor-panel') && !target.closest('.preview-panel')) {
+                clearPanelActive();
             }
         });
 
