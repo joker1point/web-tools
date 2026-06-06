@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HTML 实时渲染预览工具</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #1e1e1e; min-height: 100vh; display: flex; flex-direction: column; }
@@ -322,7 +322,7 @@
                 const imgData = canvas.toDataURL('image/png');
                 const pdfWidth = canvas.width;
                 const pdfHeight = canvas.height;
-                const pdf = new jspdf.jsPDF({
+                const pdf = new jsPDF({
                     orientation: pdfWidth > pdfHeight ? 'landscape' : 'portrait',
                     unit: 'px',
                     format: [pdfWidth, pdfHeight]
