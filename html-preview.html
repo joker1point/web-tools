@@ -258,114 +258,42 @@
             }
         }
 
-        async function loadScript(src) {
-            return new Promise((resolve, reject) => {
-                const existing = document.querySelector(`script[src="${src}"]`);
-                if (existing) {
-                    resolve();
-                    return;
-                }
-                const script = document.createElement('script');
-                script.src = src;
-                script.onload = () => resolve();
-                script.onerror = () => reject(new Error(`无法加载脚本: ${src}`));
-                document.head.appendChild(script);
-            });
-        }
-
-        async function exportPDF() {
+        function exportPDF() {
             const html = editor.value.trim();
             if (!html) {
                 showToast('没有可导出的内容');
                 return;
             }
 
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            const loadingText = document.getElementById('loadingText');
+            let finalHtml = html;
+            const hasDoctype = /^<!DOCTYPE/i.test(html);
+            const hasHtmlTag = /<html[\s>]/i.test(html);
 
-            loadingOverlay.classList.remove('hidden');
-            loadingText.textContent = '正在加载PDF生成库...';
-
-            try {
-                await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-                await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.min.js');
-
-                if (typeof html2canvas === 'undefined') {
-                    throw new Error('html2canvas 加载失败，请检查网络连接');
-                }
-                if (typeof jsPDF === 'undefined') {
-                    throw new Error('jsPDF 加载失败，请检查网络连接');
-                }
-
-                loadingText.textContent = '正在生成PDF...';
-
-                let finalHtml = html;
-                const hasDoctype = /^<!DOCTYPE/i.test(html);
-                const hasHtmlTag = /<html[\s>]/i.test(html);
-
-                if (!hasDoctype && !hasHtmlTag) {
-                    const title = html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] || 'PDF Export';
-                    const bodyContent = html;
-                    finalHtml = `<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>${title}</title>\n    <style>\n        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; }\n    </style>\n</head>\n<body>\n${bodyContent}\n</body>\n</html>`;
-                }
-
-                const tempFrame = document.createElement('iframe');
-                tempFrame.style.cssText = 'position: fixed; left: -9999px; top: -9999px; width: 800px; height: 1000px; border: none;';
-                document.body.appendChild(tempFrame);
-
-                const tempDoc = tempFrame.contentDocument || tempFrame.contentWindow.document;
-                tempDoc.open();
-                tempDoc.write(finalHtml);
-                tempDoc.close();
-
-                await new Promise(resolve => {
-                    const checkLoaded = () => {
-                        if (tempDoc.readyState === 'complete') {
-                            resolve();
-                        } else {
-                            setTimeout(checkLoaded, 100);
-                        }
-                    };
-                    checkLoaded();
-                });
-
-                await new Promise(resolve => setTimeout(resolve, 500));
-
-                loadingText.textContent = '正在渲染页面...';
-
-                const canvas = await html2canvas(tempDoc.body, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false,
-                    backgroundColor: '#ffffff'
-                });
-
-                document.body.removeChild(tempFrame);
-
-                loadingText.textContent = '正在生成PDF文件...';
-
-                const imgData = canvas.toDataURL('image/png');
-                const pdfWidth = canvas.width;
-                const pdfHeight = canvas.height;
-                const pdf = new jsPDF({
-                    orientation: pdfWidth > pdfHeight ? 'landscape' : 'portrait',
-                    unit: 'px',
-                    format: [pdfWidth, pdfHeight]
-                });
-
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-
-                const timestamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
-                const filename = `export_${timestamp}.pdf`;
-
-                pdf.save(filename);
-
-                loadingOverlay.classList.add('hidden');
-                showToast(`已导出 ${filename} ✅`);
-            } catch (err) {
-                loadingOverlay.classList.add('hidden');
-                showToast('PDF导出失败: ' + err.message);
+            if (!hasDoctype && !hasHtmlTag) {
+                const title = html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] || 'PDF Export';
+                finalHtml = `<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>${title}</title>\n    <style>\n        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Serif CJK SC', 'Microsoft YaHei', sans-serif; margin: 0; padding: 20px; }\n        @media print {\n            body { padding: 20px; }\n            * { print-color-adjust: exact; }\n        }\n    </style>\n</head>\n<body>\n${html}\n</body>\n</html>`;
             }
+
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                showToast('请允许弹出窗口以导出PDF');
+                return;
+            }
+
+            printWindow.document.open();
+            printWindow.document.write(finalHtml);
+            printWindow.document.close();
+
+            printWindow.onload = () => {
+                setTimeout(() => {
+                    printWindow.print();
+                    setTimeout(() => {
+                        printWindow.close();
+                    }, 500);
+                }, 1000);
+            };
+
+            showToast('请在打印对话框中选择"另存为PDF"');
         }
 
         function clearEditor() { editor.value = ''; updatePreview(); editor.focus(); showToast('已清空'); }
