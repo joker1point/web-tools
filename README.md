@@ -53,6 +53,39 @@ cd react-vite && npm install && npm run dev
 
 无需安装、无需网络（除 API 测试需联网）。
 
+## 📦 一键打包
+
+将所有工具（静态页 + React Dashboard）打包到 `dist/`，可用任何静态服务器托管：
+
+```bash
+# 跨平台 (推荐)
+./build.sh            # Git Bash / Linux / macOS
+build.bat             # Windows 原生 cmd
+
+# 或使用 npm
+npm run build
+```
+
+构建流程：
+1. 安装 `react-vite` 依赖
+2. 编译 React Dashboard (Vite build)
+3. 收集所有工具到 `dist/`
+   - `index.html` — 入口导航
+   - `remove-hash.html` — 文本清理工具
+   - `html-preview.html` — HTML 预览工具
+   - `api-dashboard/` — React Dashboard 编译产物
+   - `manifest.json` — 工具清单
+
+本地预览打包结果：
+
+```bash
+npm run preview       # 默认 4173 端口
+# 或
+npx serve dist
+```
+
+GitHub Pages 已配置自动部署（`.github/workflows/static.yml`），`main` 分支 push 后自动构建并发布到 https://joker1point.github.io/web-tools/。
+
 ## 📄 License
 
 MIT

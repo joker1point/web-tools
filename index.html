@@ -18,6 +18,8 @@
         .tool-card p { font-size: 14px; color: #666; line-height: 1.6; }
         .tool-card .tags { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
         .tool-card .tag { font-size: 12px; padding: 3px 10px; background: #f0f0f0; border-radius: 10px; color: #666; }
+        .tool-card .tool-note { margin-top: 10px; font-size: 12px; color: #4a90d9; }
+        .tool-card--local { background: linear-gradient(135deg, #fff 0%, #f7f9ff 100%); }
         .footer { text-align: center; margin-top: 30px; font-size: 13px; color: #aaa; }
         .footer a { color: #4a90d9; text-decoration: none; }
     </style>
@@ -47,6 +49,17 @@
                 <span class="tag">内置模板</span>
                 <span class="tag">拖拽布局</span>
             </div>
+        </a>
+        <a class="tool-card tool-card--local" href="https://github.com/joker1point/web-tools/tree/main/react-vite">
+            <div class="icon">🔌</div>
+            <h2>LLM API 联通测试 Dashboard</h2>
+            <p>本地运行的 API 连通性验证工具，支持 15+ 主流 LLM 服务商，一键测试模型列表与延迟。</p>
+            <div class="tags">
+                <span class="tag">LLM API</span>
+                <span class="tag">延迟测试</span>
+                <span class="tag">主题切换</span>
+            </div>
+            <div class="tool-note">需本地运行 · npm run dev</div>
         </a>
         <div class="footer">
             <p>开源项目 · <a href="https://github.com/joker1point/web-tools">GitHub</a> · MIT License</p>

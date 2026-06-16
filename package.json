@@ -1,0 +1,14 @@
+{
+  "name": "web-tools",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "description": "实用网页工具集 - 一键打包所有工具到 dist/",
+  "scripts": {
+    "dev": "npm --prefix react-vite run dev",
+    "build": "npm run build:react && npm run build:pack",
+    "build:react": "npm --prefix react-vite install && npm --prefix react-vite run build",
+    "build:pack": "node scripts/pack.js",
+    "preview": "npx --yes serve dist -l 4173"
+  }
+}
