@@ -1,6 +1,6 @@
 # Web Tools - 实用网页工具集
 
-两个开箱即用的纯前端工具，无需安装，浏览器打开即可使用。
+实用网页工具集，包含纯前端工具和本地可运行的单页应用。
 
 一键体验链接：https://joker1point.github.io/web-tools
 
@@ -30,13 +30,28 @@
 - Tab 键自动缩进
 - 暗色主题编辑器
 
+### 3. API 联通测试 Dashboard ([react-vite/](react-vite/))
+
+本地运行的 LLM API 连通性验证工具，支持 15+ 主流服务商。
+
+**功能：**
+- 一键获取可用模型列表
+- Streaming 延迟测试（TTFT + 总延迟 + 历史对比）
+- 自动识别 Anthropic / OpenAI 兼容认证方式
+- 亮色/暗色主题切换
+- 基于 React 18 + Vite 5 + Ant Design 5
+
+**启动：**
+```bash
+cd react-vite && npm install && npm run dev
+```
+
 ## 🚀 使用方式
 
-1. 下载对应的 `.html` 文件
-2. 双击在浏览器中打开
-3. 开始使用
+- **纯前端工具（1、2）**：下载对应 `.html` 文件，双击浏览器打开即可
+- **React 应用（3）**：本地 `npm install && npm run dev` 启动开发服务器
 
-无需服务器、无需安装、无需网络。
+无需安装、无需网络（除 API 测试需联网）。
 
 ## 📄 License
 

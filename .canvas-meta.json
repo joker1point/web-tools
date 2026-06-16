@@ -1,0 +1,110 @@
+{
+  "designSystemApproved": false,
+  "activePage": "html-preview.html",
+  "version": 1,
+  "createdAt": "2026-06-16T00:37:18.437Z",
+  "updatedAt": "2026-06-16T00:59:31.873Z",
+  "frames": [
+    {
+      "id": "index",
+      "kind": "html-file",
+      "title": "Main Canvas",
+      "fileName": "index.html",
+      "x": 0,
+      "y": 0,
+      "width": 1440,
+      "height": 900,
+      "status": "draft",
+      "createdAt": "2026-06-16T00:59:06.463Z",
+      "updatedAt": "2026-06-16T00:59:06.463Z"
+    },
+    {
+      "id": "html-preview",
+      "kind": "html-file",
+      "title": "Html Preview",
+      "fileName": "html-preview.html",
+      "x": 1500,
+      "y": 0,
+      "width": 1440,
+      "height": 900,
+      "status": "draft",
+      "createdAt": "2026-06-16T00:59:06.463Z",
+      "updatedAt": "2026-06-16T00:59:06.463Z"
+    },
+    {
+      "id": "remove-hash",
+      "kind": "html-file",
+      "title": "Remove Hash",
+      "fileName": "remove-hash.html",
+      "x": 3000,
+      "y": 0,
+      "width": 1440,
+      "height": 900,
+      "status": "draft",
+      "createdAt": "2026-06-16T00:59:06.463Z",
+      "updatedAt": "2026-06-16T00:59:06.463Z"
+    },
+    {
+      "id": "react-preview",
+      "kind": "localhost",
+      "title": "React Preview",
+      "url": "http://127.0.0.1:5273/",
+      "designUrl": "http://127.0.0.1:5273/canvas-design.html",
+      "previewUrl": "http://127.0.0.1:5273/",
+      "route": "/",
+      "code": {
+        "root": "react-vite",
+        "route": "/",
+        "packageName": "react-vite",
+        "files": [
+          {
+            "path": "react-vite/dist/assets/index-B5DFRt_V.js",
+            "role": "other"
+          },
+          {
+            "path": "react-vite/dist/assets/index-BHvkZHbP.css",
+            "role": "style"
+          },
+          {
+            "path": "react-vite/package-lock.json",
+            "role": "other"
+          },
+          {
+            "path": "react-vite/package.json",
+            "role": "config"
+          },
+          {
+            "path": "react-vite/src/App.jsx",
+            "role": "route",
+            "symbol": "App"
+          },
+          {
+            "path": "react-vite/src/main.jsx",
+            "role": "entry"
+          },
+          {
+            "path": "react-vite/src/styles.css",
+            "role": "style"
+          },
+          {
+            "path": "react-vite/vite.config.js",
+            "role": "config"
+          }
+        ],
+        "devServer": {
+          "port": 5273,
+          "url": "http://127.0.0.1:5273"
+        }
+      },
+      "x": 0,
+      "y": 0,
+      "width": 1440,
+      "height": 900,
+      "status": "active",
+      "source": "imported",
+      "createdAt": "2026-06-16T00:45:54.897Z",
+      "updatedAt": "2026-06-16T00:45:54.897Z"
+    }
+  ],
+  "activeFrameId": "react-preview"
+}

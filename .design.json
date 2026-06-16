@@ -1,0 +1,230 @@
+{
+  "version": 1,
+  "updatedAt": "2026-06-15T14:30:00.000Z",
+  "brief": {
+    "artifactType": "dashboard",
+    "targetPlatform": [
+      "responsive",
+      "web"
+    ],
+    "audience": "开发者/运维人员",
+    "description": "本地运行的 API 测试 Dashboard，支持填写 API Key、选择常见 Base URL、测试模型列表获取和连通性延迟检测",
+    "businessGoal": "让开发者快速验证 LLM API 的连通性、可用模型列表及响应延迟，减少手动调试时间",
+    "productType": "developer-tool",
+    "tone": "专业、简洁、高效"
+  },
+  "output": {
+    "target": "react-vite",
+    "componentLibrary": "antd",
+    "previewStrategy": "Generate React/Vite files, start dev server with Bash, and connect via Canvas add_frame."
+  },
+  "resources": {
+    "skill": {
+      "id": "dashboard",
+      "title": "dashboard",
+      "rationale": "mode matches prototype; trigger: dashboard; skill id phrase appears in brief",
+      "alternatives": [
+        "saas-landing",
+        "docs-page",
+        "web-prototype"
+      ]
+    },
+    "styleReference": {
+      "primary": "github",
+      "inspiration": [
+        "linear-app",
+        "cloudscape"
+      ],
+      "rationale": "preview language overlaps brief; popular reference; dashboard mode fit"
+    },
+    "requiredReads": [
+      {
+        "kind": "skill",
+        "id": "dashboard",
+        "reason": "Selected Canvas skill checklist."
+      },
+      {
+        "kind": "design-system",
+        "id": "github",
+        "reason": "Primary style reference."
+      },
+      {
+        "kind": "craft",
+        "id": "anti-ai-slop",
+        "reason": "Baseline AI-slop guardrail for all Canvas design artifacts."
+      },
+      {
+        "kind": "craft",
+        "id": "typography",
+        "reason": "Baseline typography quality rule for visual execution."
+      },
+      {
+        "kind": "craft",
+        "id": "color",
+        "reason": "Baseline color quality rule for visual execution."
+      },
+      {
+        "kind": "protocol",
+        "id": "design-mode-runtime",
+        "reason": "Design Plan Mode execution and runtime contract."
+      },
+      {
+        "kind": "protocol",
+        "id": "skill-protocol",
+        "reason": "Skill metadata and resource selection contract."
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "react-vite/package.json",
+      "action": "create",
+      "purpose": "项目依赖与脚本配置，包含 React 18、Ant Design 5.x、Vite 等核心依赖",
+      "requirements": [
+        "react 18.x + react-dom 18.x",
+        "antd 5.x",
+        "vite 5.x + @vitejs/plugin-react",
+        "dayjs as antd peer dependency",
+        "scripts: dev, build, preview"
+      ]
+    },
+    {
+      "path": "react-vite/index.html",
+      "action": "create",
+      "purpose": "Vite 入口 HTML，挂载根节点",
+      "requirements": [
+        "挂载点 div#root",
+        "引入 /src/main.jsx",
+        "设置页面标题为 API 联通测试"
+      ]
+    },
+    {
+      "path": "react-vite/vite.config.js",
+      "action": "create",
+      "purpose": "Vite 构建配置，启用 React 插件",
+      "requirements": [
+        "使用 @vitejs/plugin-react",
+        "server.host: 127.0.0.1",
+        "server.port: 5173"
+      ]
+    },
+    {
+      "path": "react-vite/src/main.jsx",
+      "action": "create",
+      "purpose": "React 应用入口，渲染 App 组件",
+      "requirements": [
+        "使用 ReactDOM.createRoot",
+        "引入 Ant Design 样式和自定义样式"
+      ]
+    },
+    {
+      "path": "react-vite/src/App.jsx",
+      "action": "create",
+      "purpose": "Dashboard 主页面，包含 API Key 输入、Base URL 选择、模型列表测试和连通性延迟测试",
+      "requirements": [
+        "顶部配置区：API Key 输入框（支持密码显隐切换）+ Base URL 下拉选择（预置 OpenAI / Anthropic / Google Gemini / DeepSeek / Moonshot / 智谱 / 通义千问 / SiliconFlow 等常见服务商）+ 自定义 URL 输入",
+        "测试一 — 模型列表：点击按钮发起 GET /v1/models 请求，以 Ant Design Table 展示模型 ID 列表，支持搜索过滤，显示请求耗时",
+        "测试二 — 连通性延迟：点击按钮发送一个轻量级 chat/completions 请求（如 'Hi'），显示状态码、延迟(ms)、首字时间，支持多次测试对比",
+        "所有请求通过浏览器 fetch 直接发出（无后端代理），CORS 友好",
+        "加载状态、错误状态、空状态均有完整 UI 处理",
+        "使用 Ant Design 的 ConfigProvider 设置中文 locale 和紧凑主题"
+      ]
+    },
+    {
+      "path": "react-vite/src/styles.css",
+      "action": "create",
+      "purpose": "全局样式与 Ant Design 主题定制",
+      "requirements": [
+        "CSS 自定义属性定义色彩、间距种子 token",
+        "基于 GitHub 风格的开发者配色",
+        "暗色/亮色主题支持（通过 Ant Design ConfigProvider）",
+        "响应式布局断点处理"
+      ]
+    },
+    {
+      "path": "react-vite/canvas-design.html",
+      "action": "create",
+      "purpose": "Canvas 设计时预览路由页面",
+      "requirements": [
+        "作为 Canvas 框架设计路由入口",
+        "指向 React 应用的预览 URL"
+      ]
+    }
+  ],
+  "designDirection": {
+    "fidelity": "high-fidelity",
+    "styleSource": "github + linear-app + cloudscape inspiration",
+    "visualTone": [
+      "professional",
+      "developer-first",
+      "clean",
+      "compact-density",
+      "code-first"
+    ]
+  },
+  "structure": {
+    "screens": [
+      {
+        "id": "dashboard",
+        "title": "API 联通测试 Dashboard",
+        "description": "单页面 Dashboard，垂直布局"
+      }
+    ],
+    "sections": [
+      {
+        "id": "header",
+        "title": "顶部标题栏",
+        "description": "应用标题 + 主题切换按钮"
+      },
+      {
+        "id": "config",
+        "title": "API 配置区",
+        "description": "API Key 输入（密码显隐）、Base URL 下拉选择（含预置服务商列表 + 自定义输入）、连接状态指示灯"
+      },
+      {
+        "id": "model-test",
+        "title": "测试一：模型列表",
+        "description": "获取按钮 + Ant Design Table 展示模型 ID / owned_by / created，支持搜索过滤，右上角显示请求耗时"
+      },
+      {
+        "id": "latency-test",
+        "title": "测试二：连通性与延迟",
+        "description": "测试按钮 + 结果卡片：状态码、总延迟(ms)、首字时间(TTFT)、多次测试结果列表对比"
+      }
+    ]
+  },
+  "interaction": {
+    "primaryFlow": "用户输入 API Key → 选择 Base URL → 点击获取模型列表查看可用模型 → 点击连通性测试查看延迟数据",
+    "states": [
+      "初始态：配置区空白，测试按钮禁用",
+      "配置态：填写 Key + URL 后测试按钮激活",
+      "加载态：请求中显示 Spin / Skeleton",
+      "成功态：展示模型列表或延迟结果",
+      "错误态：显示错误信息和状态码",
+      "空态：模型列表为空时的提示"
+    ]
+  },
+  "quality": {
+    "responsive": true,
+    "accessibility": true,
+    "lintRequired": true,
+    "acceptanceCriteria": [
+      "Generated artifact is responsive and has no obvious text overlap or clipped primary controls.",
+      "Primary actions, input controls, empty/loading/error states, and key content are visible and grounded in the brief.",
+      "Design quality check has P0=0 and all P1 issues are fixed or explicitly waived.",
+      "React/Vite output is runnable through npm run dev and npm run build with no errors.",
+      "API Key 输入框支持密码显隐切换",
+      "预置至少 8 个常见 LLM 服务商 Base URL",
+      "延迟测试显示毫秒级精度",
+      "所有 API 请求直接从浏览器发出，无需后端代理"
+    ]
+  },
+  "risks": [
+    {
+      "id": "cors",
+      "description": "部分 API 服务商可能不允许浏览器直接跨域请求",
+      "mitigation": "在 UI 中提示 CORS 限制，建议用户使用支持 CORS 的代理或本地代理方案"
+    }
+  ],
+  "abstract": "本计划将为开发者/运维人员设计一个本地运行的 API 联通测试 Dashboard（React + Vite + Ant Design 5），用于快速验证主流 LLM API 的连通性。用户输入 API Key 并选择预置的 Base URL（OpenAI、Anthropic、DeepSeek、Gemini 等 8+ 家服务商），即可一键测试模型列表获取和连通性延迟检测。界面采用 GitHub 风格的紧凑专业配色，支持亮色/暗色主题切换。执行时以 react-vite 项目输出，通过 npm run dev 本地启动预览。请重点确认预置服务商列表、交互流程和视觉风格是否符合预期。"
+}

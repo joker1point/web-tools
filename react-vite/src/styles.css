@@ -1,0 +1,144 @@
+/* ── Seed tokens (light) ──────────────────────────────────────── */
+:root {
+  --seed-bg: #ffffff;
+  --seed-surface: #f6f8fa;
+  --seed-fg: #1f2328;
+  --seed-muted: #656d76;
+  --seed-border: #d0d7de;
+  --seed-primary: #0969da;
+  --seed-accent: #1a7f37;
+  --seed-danger: #cf222e;
+  --seed-warn: #9a6700;
+  --seed-radius: 6px;
+  --density-padding: 20px;
+}
+
+/* ── Reset & base ─────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans',
+    Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--seed-fg);
+  background: var(--seed-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ── Code & mono ──────────────────────────────────────────────── */
+code,
+.ant-typography code,
+.ant-typography-copy code {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+  font-size: 12px;
+  padding: 2px 6px;
+  background: var(--seed-surface);
+  border: 1px solid var(--seed-border);
+  border-radius: 4px;
+}
+
+/* ── Scrollbar (WebKit) ───────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--seed-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--seed-muted);
+}
+
+/* ── Ant Design overrides ─────────────────────────────────────── */
+.ant-card {
+  border-color: var(--seed-border) !important;
+  border-radius: var(--seed-radius) !important;
+}
+
+.ant-card-head {
+  border-bottom-color: var(--seed-border) !important;
+  min-height: 44px !important;
+  padding: 0 20px !important;
+}
+
+.ant-card-head-title {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em;
+}
+
+.ant-input-affix-wrapper,
+.ant-input,
+.ant-select-selector {
+  border-radius: var(--seed-radius) !important;
+}
+
+.ant-table-thead > tr > th {
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.ant-statistic-title {
+  font-size: 11px !important;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.ant-statistic-content-value {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Transitions ──────────────────────────────────────────────── */
+.ant-card,
+.ant-table,
+header {
+  transition: background 0.2s ease-out, border-color 0.2s ease-out;
+}
+
+/* ── Semantic color utilities (consumed from seed tokens) ─────── */
+.text-primary { color: var(--seed-primary); }
+.text-accent { color: var(--seed-accent); }
+.text-danger { color: var(--seed-danger); }
+.text-warn { color: var(--seed-warn); }
+.bg-surface { background: var(--seed-surface); }
+
+.ant-btn-primary {
+  background: var(--seed-primary) !important;
+  border-color: var(--seed-primary) !important;
+  border-radius: var(--seed-radius) !important;
+}
+
+.ant-btn-primary:hover {
+  background: color-mix(in srgb, var(--seed-primary) 85%, black) !important;
+}
+
+.ant-card-body {
+  padding: var(--density-padding) !important;
+}
+
+/* ── Responsive tweaks ────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .ant-card-body {
+    padding: 16px !important;
+  }
+}
