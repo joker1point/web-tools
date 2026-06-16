@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Tools - 实用网页工具集</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f5f5f5; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { max-width: 600px; width: 100%; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .header h1 { font-size: 28px; color: #1a1a1a; margin-bottom: 8px; }
+        .header p { font-size: 15px; color: #888; }
+        .tool-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); padding: 28px; margin-bottom: 20px; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; text-decoration: none; display: block; color: inherit; }
+        .tool-card:hover { transform: translateY(-2px); box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+        .tool-card .icon { font-size: 36px; margin-bottom: 12px; }
+        .tool-card h2 { font-size: 20px; color: #1a1a1a; margin-bottom: 8px; }
+        .tool-card p { font-size: 14px; color: #666; line-height: 1.6; }
+        .tool-card .tags { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .tool-card .tag { font-size: 12px; padding: 3px 10px; background: #f0f0f0; border-radius: 10px; color: #666; }
+        .footer { text-align: center; margin-top: 30px; font-size: 13px; color: #aaa; }
+        .footer a { color: #4a90d9; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Web Tools</h1>
+            <p>实用网页工具集，浏览器打开即可使用</p>
+        </div>
+        <a class="tool-card" href="remove-hash.html">
+            <div class="icon">✂️</div>
+            <h2>文本清理替换工具</h2>
+            <p>自动去除 # 和 * 符号，支持自定义文字替换规则，实时统计面板。</p>
+            <div class="tags">
+                <span class="tag">去符号</span>
+                <span class="tag">自定义替换</span>
+                <span class="tag">实时统计</span>
+            </div>
+        </a>
+        <a class="tool-card" href="html-preview.html">
+            <div class="icon"></div>
+            <h2>HTML 实时渲染预览</h2>
+            <p>粘贴 HTML 代码即可实时渲染预览，内置常用模板，所见即所得。</p>
+            <div class="tags">
+                <span class="tag">实时预览</span>
+                <span class="tag">内置模板</span>
+                <span class="tag">拖拽布局</span>
+            </div>
+        </a>
+        <div class="footer">
+            <p>开源项目 · <a href="https://github.com/joker1point/web-tools">GitHub</a> · MIT License</p>
+        </div>
+    </div>
+</body>
+</html>
