@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   ConfigProvider,
   theme as antdTheme,
@@ -175,9 +175,52 @@ async function testLatency(baseURL, apiKey, modelName, testMessage, maxTokens, s
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let firstChunk = true;
-    let fullText = '';
+    let buffer = '';
+    let content = '';
 
-    try {
+    /* incrementally parse SSE lines as they arrive; bail out when finish_reason
+       is present (stream completed) or abort signal triggers, so we don't keep
+       reading after the meaningful response is already in. */
+    let finished = false;
+
+    const parseLines = (text) => {
+      let lastNewline = text.lastIndexOf('\n');
+      if (lastNewline < 0) return;
+      const complete = text.slice(0, lastNewline);
+      buffer = text.slice(lastNewline + 1);
+      const lines = complete.split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data:')) continue;
+        const payload = trimmed.slice(5).trim();
+        if (!payload || payload === '[DONE]') {
+          finished = true;
+          continue;
+        }
+        try {
+          const json = JSON.parse(payload);
+          if (isAnthropic) {
+            if (json.type === 'content_block_delta') {
+              content += json.delta?.text || '';
+            } else if (json.type === 'message_stop') {
+              finished = true;
+            }
+          } else {
+            const choice = json.choices?.[0];
+            if (choice?.delta?.content) {
+              content += choice.delta.content;
+            }
+            if (choice?.finish_reason && choice.finish_reason !== 'null') {
+              finished = true;
+            }
+          }
+        } catch {
+          /* non-JSON line, ignore */
+        }
+      }
+    };
+
+    const readLoop = (async () => {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -188,30 +231,28 @@ async function testLatency(baseURL, apiKey, modelName, testMessage, maxTokens, s
         }
 
         const chunk = decoder.decode(value, { stream: true });
-        fullText += chunk;
+        parseLines(buffer + chunk);
+
+        if (finished) {
+          /* graceful early exit: cancel reader so the server's leftover
+             bytes don't keep the connection alive */
+          try { await reader.cancel(); } catch { /* noop */ }
+          break;
+        }
       }
+    })();
+
+    /* race: either the stream finishes naturally, or the consumer aborts
+       via signal (e.g. when finish_reason is detected, we cancel above) */
+    try {
+      await readLoop;
     } catch {
       /* stream aborted */
     }
 
     totalDuration = Math.round(performance.now() - start);
 
-    const lines = fullText.split('\n');
-    let content = '';
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed.startsWith('data: ') && trimmed !== 'data: [DONE]') {
-        try {
-          const json = JSON.parse(trimmed.slice(6));
-          const delta = json.choices?.[0]?.delta?.content || json.delta?.text || '';
-          content += delta;
-        } catch {
-          /* non-JSON line */
-        }
-      }
-    }
-
-    return { status, ttft, totalDuration, content };
+    return { status, ttft, totalDuration, content: content.slice(0, 200) };
   }
 
   /* fallback: no streaming */
@@ -243,6 +284,7 @@ export default function App() {
   const [latencyLoading, setLatencyLoading] = useState(false);
   const [latencyResults, setLatencyResults] = useState([]);
   const [latencyError, setLatencyError] = useState(null);
+  const latencyAbortRef = useRef(null);
 
   const activeURL = showCustomInput ? customURL : baseURL;
   const isConfigReady = apiKey.trim() !== '' && activeURL.trim() !== '';
@@ -318,10 +360,18 @@ export default function App() {
   }, [activeURL, apiKey]);
 
   const handleLatencyTest = useCallback(async () => {
+    if (latencyLoading) return; /* guard against double-click */
+
+    /* cancel any in-flight request before starting a new one */
+    if (latencyAbortRef.current) latencyAbortRef.current.abort();
+
+    const controller = new AbortController();
+    latencyAbortRef.current = controller;
+
     setLatencyLoading(true);
     setLatencyError(null);
     try {
-      const result = await testLatency(activeURL, apiKey, modelName, testMessage, maxTokens);
+      const result = await testLatency(activeURL, apiKey, modelName, testMessage, maxTokens, controller.signal);
       if (result.error) {
         setLatencyError(result.error);
       }
@@ -330,11 +380,16 @@ export default function App() {
         ...prev,
       ]);
     } catch (err) {
-      setLatencyError(err.message);
+      if (err.name !== 'AbortError') {
+        setLatencyError(err.message);
+      }
     } finally {
+      if (latencyAbortRef.current === controller) {
+        latencyAbortRef.current = null;
+      }
       setLatencyLoading(false);
     }
-  }, [activeURL, apiKey, modelName, testMessage, maxTokens]);
+  }, [activeURL, apiKey, modelName, testMessage, maxTokens, latencyLoading]);
 
   /* ── table columns ────────────────────────────────────────── */
 
