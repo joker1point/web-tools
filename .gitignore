@@ -39,3 +39,4 @@ venv/
 dist/
 outputs/verify-*.png
 .workbuddy/memory/
+api-dashboard-deploy/
